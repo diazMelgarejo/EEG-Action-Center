@@ -1,6 +1,6 @@
 # Live status page: design, deferred
 
-**Status: design only. Nothing here is built.** The launcher on the `site` branch stays as it is until the gates in section 6 are met. This file exists so the next step is decided on evidence, not improvised.
+**Status: built as a draft, switched off.** Option B is implemented in `src/device-inventory-status-app/`, tested against fakes and rendered once in a real browser with a stand-in for Google. It has not run on real Google. The operator asked to apply it before the gates in section 6 are met, so the gates now decide when it is switched **on**, not when it is built.
 
 ## 1. The problem
 
@@ -78,7 +78,10 @@ Proposed. The operator decides.
 
 Then build option B test-first: a fake `Session` and Sheets, the renderer tested in plain Node, Python first for any new rule (there should be none), a new row in `SYNC.md`, and a new pilot test for each risk in section 5.
 
-## 7. Not decided
+## 7. Decided by the operator (2026-10-31)
 
-- Whether readers who are not admins may see the page. This needs a ruling and a place to keep the reader list.
-- Whether serials appear on the page or only lab status. A page is easier to share by accident than a sheet is.
+- **Who sees it:** anyone signed in on the organization account, not only admins, for each site whose sheet their own Google account can open. No separate reader list: Google's file sharing is the list, and a person who can open the sheet already sees everything on the page.
+- **What it shows:** lab status and serials.
+- **Updates:** authorized users may add updates. They do it through the Google Form, which already enforces the append-only and hold rules and records who submitted. The page links to it and never writes. Whoever the Form is shared with is authorized.
+
+One consequence to plan for: a person who should see the page must also have the sheet shared with them as Viewer. If that is too broad for some staff, the answer is a narrower sheet share, not a second list in the page.

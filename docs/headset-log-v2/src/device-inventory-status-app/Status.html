@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Equipment status</title>
+<style>
+:root { --ivory: #FBF9F1; --pearl: #F1EEE6; --ink: #2C2A29; --muted: #6E6A5F; --line: #E2DDD3; --alert: #F3D7D3; --alert-ink: #8A2D22; --accent: #294B43; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 16px/1.5 system-ui, sans-serif; background: var(--ivory); color: var(--ink); }
+main { max-width: 70rem; margin: 0 auto; padding: 1.5rem; }
+h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+h2 { font-size: 1.15rem; margin: 0 0 .5rem; }
+h3 { font-size: 1rem; margin: 0 0 .5rem; }
+article, section { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+section { margin: 1rem 0 0; }
+.note { color: var(--muted); font-size: .85rem; margin: 0 0 .75rem; }
+.bar { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin: .5rem 0 0; }
+.update { display: inline-block; padding: .6rem 1.1rem; border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; }
+.update:focus-visible, a:focus-visible, button:focus-visible { outline: 3px solid #5B8A7F; outline-offset: 2px; }
+button { padding: .55rem 1rem; border: 1px solid var(--line); border-radius: 6px; background: var(--pearl); cursor: pointer; font: inherit; }
+a { color: var(--accent); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: .6rem; }
+.tile { background: var(--pearl); border: 1px solid var(--line); border-radius: 6px; padding: .6rem; text-align: center; }
+.tile.alert { background: var(--alert); border-color: #E2B2AC; color: var(--alert-ink); }
+.tile .lab { display: block; font-size: .75rem; color: var(--muted); }
+.tile.alert .lab { color: var(--alert-ink); }
+.tile .serial { font-weight: 700; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); white-space: pre-wrap; }
+progress { width: 100%; }
+.unknown { color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<h1>Equipment status</h1>
+<p class="note">A read-only view of what the sheet has saved. This page changes nothing. To record a move, use Add an update.</p>
+<div class="bar"><button id="refresh" type="button">Refresh from Google</button></div>
+<p id="status" role="status" aria-live="polite">Not connected</p>
+<div id="sites"></div>
+</main>
+<script>
+'use strict';
+const refreshButton = document.getElementById('refresh');
+const message = document.getElementById('status');
+const sitesBox = document.getElementById('sites');
+const HOSTS = ['docs.google.com', 'drive.google.com', 'forms.gle'];
+
+function el(tag, text, className) {
+  const node = document.createElement(tag);
+  if (text !== undefined) node.textContent = String(text);
+  if (className) node.className = className;
+  return node;
+}
+
+function safeLink(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && !url.username && !url.password && !url.port && HOSTS.indexOf(url.hostname) !== -1;
+  } catch (error) {
+    return false;
+  }
+}
+
+function link(label, url, className) {
+  const a = el('a', label, className);
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  return a;
+}
+
+function unknownNote(part, what) {
+  return el('p', part.state === 'too-large' ? 'This view is too large to show here. Open the sheet.' : `Unknown: the sheet has no saved ${what}.`, 'unknown');
+}
+
+function table(headers, rows) {
+  const wrap = el('div', undefined, 'scroll');
+  const t = el('table');
+  const headRow = el('tr');
+  headers.forEach((h) => headRow.append(el('th', h)));
+  const head = el('thead');
+  head.append(headRow);
+  t.append(head);
+  const body = el('tbody');
+  rows.forEach((cells) => {
+    const tr = el('tr');
+    cells.forEach((c) => tr.append(el('td', c)));
+    body.append(tr);
+  });
+  t.append(body);
+  wrap.append(t);
+  return wrap;
+}
+
+function labsSection(site) {
+  const box = el('section');
+  box.append(el('h3', 'Labs'));
+  if (site.labs.state !== 'available') { box.append(unknownNote(site.labs, 'labs')); return box; }
+  const grid = el('div', undefined, 'tiles');
+  site.labs.tiles.forEach((tile) => {
+    const t = el('div', undefined, tile.alert ? 'tile alert' : 'tile');
+    t.append(el('span', tile.lab, 'lab'), el('span', tile.serial === null ? 'empty' : tile.serial, 'serial'));
+    grid.append(t);
+  });
+  box.append(grid);
+  if (site.labs.tiles.some((t) => t.alert)) box.append(el('p', 'Red means the sheet flags more than one headset in that lab.', 'note'));
+  return box;
+}
+
+function headsetSection(title, part, headers, pick, what) {
+  const box = el('section');
+  box.append(el('h3', title));
+  if (part.state !== 'available') box.append(unknownNote(part, what));
+  else if (!part.rows.length) box.append(el('p', 'None recorded.', 'unknown'));
+  else box.append(table(headers, part.rows.map(pick)));
+  return box;
+}
+
+function flagsSection(site) {
+  const box = el('section');
+  box.append(el('h3', 'Flags'));
+  if (site.flags.state !== 'available') box.append(unknownNote(site.flags, 'flags'));
+  else if (!site.flags.rows.length) box.append(el('p', 'No rows in the saved Flags view. That does not prove the ledger was freshly checked.', 'unknown'));
+  else { const list = el('ul'); site.flags.rows.forEach((r) => list.append(el('li', r))); box.append(list); }
+  return box;
+}
+
+function stepsSection(site) {
+  const box = el('section');
+  box.append(el('h3', 'Setup steps'));
+  if (site.steps.state !== 'available') { box.append(el('p', 'Setup progress unknown.', 'unknown')); return box; }
+  box.append(el('p', `${site.steps.done} of ${site.steps.total} steps marked done in the sheet. This is not production acceptance.`));
+  const bar = el('progress');
+  bar.max = site.steps.total;
+  bar.value = site.steps.done;
+  bar.setAttribute('aria-label', 'Sheet setup progress');
+  box.append(bar);
+  const list = el('ul');
+  site.steps.items.forEach((i) => list.append(el('li', `${i.step}: ${i.status}${i.next ? ` (${i.next})` : ''}`)));
+  box.append(list);
+  return box;
+}
+
+function siteCard(site) {
+  const card = el('article');
+  card.append(el('h2', site.label), el('p', `Sheet time zone: ${site.zone}. Dates and times below are shown in it.`, 'note'));
+  const bar = el('div', undefined, 'bar');
+  if (site.links.form && safeLink(site.links.form)) bar.append(link('Add an update', site.links.form, 'update'));
+  else bar.append(el('span', 'No update form is set for this site.', 'unknown'));
+  Object.keys(site.links).filter((k) => k !== 'form' && safeLink(site.links[k])).forEach((k) => bar.append(link(`Open ${k}`, site.links[k])));
+  card.append(bar, labsSection(site));
+  card.append(headsetSection('Headsets in a lab', site.inLab, ['Lab', 'Serial', 'Date', 'Time', 'Notes'], (r) => [r.lab, r.serial, r.date, r.time, r.notes], 'current view'));
+  card.append(headsetSection('Headsets not in a lab', site.notInLab, ['Serial', 'Held as', 'Date', 'Time', 'Notes'], (r) => [r.serial, r.holding, r.date, r.time, r.notes], 'current view'));
+  card.append(flagsSection(site), stepsSection(site));
+  card.append(el('p', 'Freshness of these saved views is unknown. A refresh reads them again; it does not recalculate the ledger.', 'note'));
+  return card;
+}
+
+function render(data) {
+  sitesBox.replaceChildren();
+  if (!data || data.version !== 2 || !Array.isArray(data.sites)) throw new Error('Invalid response');
+  data.sites.forEach((site) => sitesBox.append(siteCard(site)));
+  const none = data.sites.length ? '' : 'No sites you can open. Ask an administrator to share the sheet with you. ';
+  const some = data.unavailable ? 'Some configured sheets could not be opened. ' : '';
+  message.textContent = `Read at ${data.readAtUtc} (UTC). ${none}${some}`.trim();
+}
+
+function load() {
+  refreshButton.disabled = true;
+  sitesBox.replaceChildren();
+  message.textContent = 'Reading the sheets you can open...';
+  google.script.run
+    .withSuccessHandler((data) => {
+      try { render(data); } catch (error) { sitesBox.replaceChildren(); message.textContent = 'Could not display the status response.'; }
+      refreshButton.disabled = false;
+    })
+    .withFailureHandler(() => {
+      sitesBox.replaceChildren();
+      message.textContent = 'Not connected. Check you are signed in on the organization account and that an administrator has enabled the page.';
+      refreshButton.disabled = false;
+    })
+    .getStatusSnapshot();
+}
+
+refreshButton.addEventListener('click', load);
+load();
+</script>
+</body>
+</html>

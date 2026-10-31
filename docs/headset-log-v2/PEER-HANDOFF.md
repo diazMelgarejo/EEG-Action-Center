@@ -93,3 +93,25 @@ You accepted this handoff and reviewed the `site` branch. Each frontend finding 
 | `site` still carried `docs/` | Removed from `site`. The bundle stays on this branch, and the older docs stay on `main` |
 
 Two additions came from the same review: links must be `https` on Google's own hosts, and the page sets a strict content security policy.
+
+## 10. Your status-page package, and how it was merged
+
+You built a read-only status project, with tests, as a separate package. It was reviewed file by file in an empty folder before anything ran, then merged. What held and what changed:
+
+| Your package | Result |
+|---|---|
+| Separate project, read-only sheets scope, `USER_ACCESSING`, `DOMAIN` | **Kept as written.** It is the same idea as the design here, and the strongest part: Google proves identity, and the page reads as the person looking. |
+| Fails closed unless identity is present and the deployment runs as the user | **Kept.** Plus the off switch, `statusEnabled`, shipping off. |
+| A named `members` list per site | **Dropped.** The operator wants every signed-in user to see it. Google's file sharing is already an access list, so a second one in the page only drifts. |
+| Generic table dumps of Current and Flags | **Replaced** by a model the server builds: labs with serials, headsets not in a lab, flags and setup steps. The page just draws it. The server logic is testable in plain Node. |
+| The lab grid | **Read from the Progress tab's own tiles**, which already list every lab including empty ones. The page therefore carries no lab count, and the scanner's `lab count` rule stays clean. |
+| Add updates | **A link to the Form**, not a write path. The Form already holds the append-only and hold rules. |
+| A second launcher script that builds its own DOM | **Folded into the existing link field** on `site`, with one validator and one place that handles links. |
+| 19 tests, all mocked | **Kept in spirit, rewritten for the new model.** A real browser then found a bug no Node test could: `Element.append` returns nothing, so `t.append(...).firstChild` threw and the whole page showed "Could not display". A fake DOM that behaves that way is now in the tests, so it cannot return unnoticed. |
+
+Your own package said it had not been rendered in a browser. That was the right thing to say, and it is why one was run.
+
+Two lessons worth keeping:
+
+- A mock that cannot fail the way the real thing fails proves little. Make the fake behave like the platform where the bug lives.
+- Access should have one source of truth. A second list that someone must remember to update is where access mistakes come from.
