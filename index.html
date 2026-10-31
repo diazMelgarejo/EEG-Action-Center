@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
   <title>EEG Action Center — Operations Dashboard</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <header class="app-header">
@@ -14,50 +15,33 @@
         <span class="brand-badge">EEG</span>
         <h1>Action Center</h1>
       </div>
-      <div id="auth-container" class="auth-box">
-        <div id="g_id_onload"></div>
-        <div id="google-signin-btn"></div>
-        <div id="user-profile" class="user-profile hidden">
-          <span id="user-email" class="user-email"></span>
-          <button id="signout-btn" class="btn btn-secondary btn-sm">Sign out</button>
-        </div>
-      </div>
     </div>
   </header>
 
   <main class="container">
-    <section id="auth-gate" class="card auth-gate">
-      <h2>Organization Authentication Required</h2>
-      <p>This operational console connects directly to your private organization backend in Google Drive. Sign in with your authorized Google Workspace account to access site operations and live ledger links.</p>
-      <div class="gate-actions">
-        <div id="gate-signin-btn"></div>
-      </div>
-      <p class="security-note">🔒 Sensitive operational records and device history remain strictly inside private Google Drive files. No proprietary company data is stored on GitHub.</p>
-    </section>
-
-    <section id="dashboard" class="dashboard hidden">
+    <section id="dashboard" class="dashboard">
       <div class="site-header card">
         <div class="site-info">
-          <span class="status-pill status-active">Site Connected</span>
-          <h2 id="site-name">Main EEG Lab</h2>
-          <p id="site-domain" class="site-domain">Domain: Authorized Workspace User</p>
+          <span class="status-pill">Not connected</span>
+          <h2 id="site-name">No site set</h2>
+          <p class="site-note">This page holds no company data and controls no access. Google checks your account on every linked file.</p>
         </div>
         <div class="site-actions">
-          <button id="config-btn" class="btn btn-secondary">Configure Site Links</button>
+          <button id="config-btn" class="btn btn-secondary">Add Site Links</button>
         </div>
       </div>
 
       <div class="actions-grid">
-        <a id="link-form" href="#" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
+        <a id="link-form" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
           <div class="action-icon">📝</div>
           <div class="action-details">
             <h3>Submit Hardware Change</h3>
-            <p>Log a headset move, swap, pull-out, or repair via the verified Google Form.</p>
+            <p>Log a headset move, swap, pull-out, or repair in your Google Form.</p>
           </div>
           <span class="action-arrow">→</span>
         </a>
 
-        <a id="link-sheet" href="#" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
+        <a id="link-sheet" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
           <div class="action-icon">📊</div>
           <div class="action-details">
             <h3>Master Inventory Ledger</h3>
@@ -66,7 +50,7 @@
           <span class="action-arrow">→</span>
         </a>
 
-        <a id="link-review" href="#" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
+        <a id="link-review" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
           <div class="action-icon">⚖️</div>
           <div class="action-details">
             <h3>Review & Seeding</h3>
@@ -75,7 +59,7 @@
           <span class="action-arrow">→</span>
         </a>
 
-        <a id="link-drive" href="#" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
+        <a id="link-drive" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
           <div class="action-icon">📁</div>
           <div class="action-details">
             <h3>Project Drive Workspace</h3>
@@ -87,29 +71,29 @@
 
       <section class="card progress-section">
         <div class="section-title-row">
-          <h3>Visual Setup & Readiness Progress</h3>
-          <span id="progress-summary" class="progress-summary">4 of 9 steps verified</span>
+          <h3>Setup Steps</h3>
+          <span class="progress-summary">Not connected</span>
         </div>
-        <div class="progress-bar-container">
-          <div id="progress-bar" class="progress-bar" style="width: 44.4%;"></div>
-        </div>
-        <ul id="checklist" class="checklist">
-          <li class="check-item done"><span class="check-icon">✅</span> Tabs created in Google Sheet</li>
-          <li class="check-item done"><span class="check-icon">✅</span> Google Form built & destination linked</li>
-          <li class="check-item done"><span class="check-icon">✅</span> Submit trigger installed onFormSubmit</li>
-          <li class="check-item done"><span class="check-icon">✅</span> Signed in on authorized organization domain</li>
-          <li class="check-item next"><span class="check-icon">⏳</span> Source workbook WORK copy set</li>
-          <li class="check-item waiting"><span class="check-icon">⬜</span> Tip proposals loaded from workbook</li>
-          <li class="check-item waiting"><span class="check-icon">⬜</span> Operator decisions made on Review tab</li>
-          <li class="check-item waiting"><span class="check-icon">⬜</span> Ledger seeded from reviewed tips</li>
-          <li class="check-item waiting"><span class="check-icon">⬜</span> Derived Current, View, and Flags clean</li>
+        <p class="section-subtitle">This page cannot see your setup. Current progress is in your private sheet, on the Headset log menu.</p>
+        <ul class="checklist">
+          <li class="check-item">Tabs created in Google Sheet</li>
+          <li class="check-item">Google Form built and destination linked</li>
+          <li class="check-item">Submit trigger installed</li>
+          <li class="check-item">Signed in on the organization domain</li>
+          <li class="check-item">Source workbook set</li>
+          <li class="check-item">Tips proposed from the workbook</li>
+          <li class="check-item">Every decision made on the Review tab</li>
+          <li class="check-item">Ledger seeded from reviewed tips</li>
+          <li class="check-item">Derived views and flags clean</li>
         </ul>
       </section>
 
       <section class="card labs-section">
-        <h3>Labs Overview (Last-Known Headset)</h3>
-        <p class="section-subtitle">Real-time room occupancy reflected from the latest ledger tips. Red indicates multiple headsets flagged.</p>
-        <div id="labs-grid" class="labs-grid"></div>
+        <div class="section-title-row">
+          <h3>Labs</h3>
+          <span class="progress-summary">Not connected</span>
+        </div>
+        <p class="section-subtitle">Which headset is in which lab is private. Open the ledger to see it.</p>
       </section>
     </section>
   </main>
@@ -117,14 +101,14 @@
   <div id="config-modal" class="modal hidden">
     <div class="modal-content card">
       <div class="modal-header">
-        <h3>Site Google Resource Links</h3>
+        <h3>Site Links</h3>
         <button id="modal-close" class="modal-close">&times;</button>
       </div>
-      <p class="modal-desc">Configure your private Google Sheet, Google Form, and Drive folder links for this site. These settings are stored locally in your browser and never committed to GitHub.</p>
+      <p class="modal-desc">Paste your private Google links. They stay in this tab and disappear when you close or reload it. Nothing is saved in your browser or sent to GitHub.</p>
       <form id="config-form">
         <div class="form-group">
           <label for="cfg-site">Site Name</label>
-          <input type="text" id="cfg-site" placeholder="e.g. Example Labs">
+          <input type="text" id="cfg-site" placeholder="e.g. Site A">
         </div>
         <div class="form-group">
           <label for="cfg-sheet">Master Google Sheet Link</label>
@@ -139,11 +123,12 @@
           <input type="url" id="cfg-drive" placeholder="https://drive.google.com/drive/folders/...">
         </div>
         <div class="form-group">
-          <label for="cfg-client-id">Google OAuth Client ID (Optional)</label>
-          <input type="text" id="cfg-client-id" placeholder="xxxx.apps.googleusercontent.com">
+          <label for="cfg-review">Review Tab Link (Optional)</label>
+          <input type="url" id="cfg-review" placeholder="Open the Review tab, then copy its link">
         </div>
+        <p id="cfg-error" class="form-error" role="alert"></p>
         <div class="modal-actions">
-          <button type="submit" class="btn btn-primary">Save Configuration</button>
+          <button type="submit" class="btn btn-primary">Use These Links</button>
           <button type="button" id="cfg-cancel" class="btn btn-secondary">Cancel</button>
         </div>
       </form>
