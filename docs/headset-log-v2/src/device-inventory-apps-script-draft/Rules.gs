@@ -387,11 +387,16 @@ function correctionRows(ledger, entryId, newWhen, author) {
   return family.filter((row) => row.auto).map(redo);
 }
 
+/** A sheet may show Date&Time with one space where the format has two. */
+function singleSpaced_(text) {
+  return String(text || '').trim().replace(/\s+/g, ' ');
+}
+
 /** Seed rows in SEED_COLUMNS, as the sheet displays them. A stated Date&Time must equal Date + Time. */
 function rowsFromSeed(table) {
   return table.map(([date, time, combined, lab, type, change, notes, holding, timeBasis, source]) => {
     const row = makeRow({ date: parseDateText(date), time: parseTimeText(time), lab, type, change: Number(change), notes, holding, timeBasis, source, id: `tip-${change}`, group: 'tip' });
-    if ((combined || '') !== dateTimeText(dateTime(row))) throw new Error(`Date&Time ${combined} is not Date + Time for ${change}.`);
+    if (singleSpaced_(combined) !== singleSpaced_(dateTimeText(dateTime(row)))) throw new Error(`Date&Time ${combined} is not Date + Time for ${change}.`);
     return row;
   });
 }

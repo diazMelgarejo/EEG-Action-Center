@@ -219,6 +219,10 @@ class Seed(unittest.TestCase):
         self.assertEqual(rows[0].date_time, datetime(2021, 1, 15, 12, 15))
         self.assertIsNone(rows[1].date_time)
 
+    def test_seed_ignores_the_spacing_a_sheet_gives_date_time(self):
+        table = [["January 15, 2021", "12:15", "2021/01/15 12:15:00", "Lab 12", "Headset", "7001", "", "", "stated", "x"]]
+        self.assertEqual(dil.rows_from_seed(table)[0].date_time, datetime(2021, 1, 15, 12, 15))
+
     def test_seed_refuses_a_date_time_that_is_not_date_plus_time(self):
         table = [["January 15, 2021", "12:15", "2021/01/15  12:16:00", "Lab 12", "Headset", "7001", "", "", "stated", "x"]]
         with self.assertRaises(ValueError):

@@ -43,6 +43,20 @@ class Propose(unittest.TestCase):
         self.assertEqual(got["Lab 1"].status, tp.AGREE)
         self.assertEqual(got["Lab 2"].workbook, 7003)  # the undated row is ignored
 
+    def test_a_headset_that_left_is_no_longer_the_lab_tip(self):
+        rows = [wb(20, D1, time(9, 0), "Lab 1", 7001), wb(21, D2, time(9, 0), "None", 7001)]
+        got = by_key(tp.propose_tips(rows, legend(), lab_count=1))
+        self.assertEqual((got["Lab 1"].status, got["Lab 1"].workbook, got["Lab 1"].workbook_row), (tp.EMPTY, None, 21))
+        self.assertIn("row 21 moves 7001", got["Lab 1"].reason)
+        self.assertEqual((got["serial 7001"].status, got["serial 7001"].workbook_row), (tp.DECIDE, 21))
+
+    def test_a_legend_that_still_shows_a_headset_that_left_needs_a_decision(self):
+        rows = [wb(20, D1, time(9, 0), "Lab 1", 7001), wb(21, D2, time(9, 0), "None", 7001)]
+        got = by_key(tp.propose_tips(rows, legend({"Lab 1": 7001}), lab_count=1))["Lab 1"]
+        self.assertEqual((got.status, got.options), (tp.DECIDE, (tp.USE_WORKBOOK, tp.USE_LEGEND, tp.HOLD)))
+        result = tp.resolve_tips((got,), {"Lab 1": tp.USE_WORKBOOK, "serial 7001": "Spare"}, rows)
+        self.assertEqual([(r[0], r[3], r[7], r[9]) for r in result.seed_table], [("May 01, 2026", "None", "Spare", "workbook r21")])
+
     def test_a_row_with_a_date_but_no_time_orders_at_the_start_of_its_date(self):
         rows = [wb(1, D2, None, "Lab 1", 7001), wb(2, D2, time(0, 1), "Lab 1", 7002)]
         got = by_key(tp.propose_tips(rows, legend({"Lab 1": 7002}), lab_count=1))

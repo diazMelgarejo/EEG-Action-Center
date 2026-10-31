@@ -106,25 +106,28 @@ def propose_tips(rows: Sequence[WorkbookRow], legend: Legend, lab_count: int) ->
     lab_serials = {s for s in (_serial(v) for v in legend.labs.values()) if s is not None}
     for number in range(1, lab_count + 1):
         lab = f"Lab {number}"
-        row, raw = by_lab.get(lab), legend.labs.get(lab)
+        arrival, raw = by_lab.get(lab), legend.labs.get(lab)
+        left = by_serial[arrival.change] if arrival and by_serial[arrival.change].lab != lab else None  # its latest row is elsewhere
+        row = None if left else arrival
+        moved = f"workbook row {left.number} moves {left.change} from here to {left.lab}" if left else ""
         text = "" if _blank(raw) else str(raw)
         leg = _serial(raw)
         wb = row.change if row else None
         covered |= {s for s in (wb, leg) if s is not None}
         if row is None and not text:
-            status, reason, options = EMPTY, "no workbook row and the legend shows nothing", ()
+            status, reason, options = EMPTY, moved or "no workbook row and the legend shows nothing", ()
         elif text and leg is None:
             status, reason = DECIDE, f"legend cell is not a single serial: {text}"
-            options = (USE_WORKBOOK, HOLD) if row else (HOLD,)
-        elif row and leg == wb and by_serial[row.change].lab != lab:
-            status, reason, options = DECIDE, f"workbook row {row.number} puts {wb} here, but a later workbook row moves it to {by_serial[row.change].lab}", (USE_WORKBOOK, USE_LEGEND, HOLD)
+            options = (USE_WORKBOOK, HOLD) if row or left else (HOLD,)
         elif row and leg == wb:
             status, reason, options = AGREE, "workbook and legend agree", ()
         else:
             status = DECIDE
-            reason = f"workbook says {wb if row else 'nothing'}{f' (row {row.number})' if row else ''}; legend says {leg if leg is not None else 'nothing'}"
-            options = tuple(o for o, ok in ((USE_WORKBOOK, row is not None), (USE_LEGEND, leg is not None), (HOLD, True)) if ok)
-        proposals.append(Proposal(lab, lab, wb, row.number if row else None, leg, text, status, reason, options))
+            workbook_says = moved or f"workbook says {wb if row else 'nothing'}{f' (row {row.number})' if row else ''}"
+            reason = f"{workbook_says}; legend says {leg if leg is not None else 'nothing'}"
+            options = tuple(o for o, ok in ((USE_WORKBOOK, row is not None or left is not None), (USE_LEGEND, leg is not None), (HOLD, True)) if ok)
+        shown = row or left
+        proposals.append(Proposal(lab, lab, wb, shown.number if shown else None, leg, text, status, reason, options))
     for serial, kind in sorted(legend.holding.items()):
         covered.add(serial)
         row = by_serial.get(serial)
@@ -182,7 +185,8 @@ def resolve_tips(proposals: Sequence[Proposal], decisions: Mapping[str, str], ro
             continue
         if p.key.startswith("Lab "):
             serial = p.legend if choice == USE_LEGEND else p.workbook
-            assert serial is not None
+            if serial is None:  # Use workbook on a headset that left: the lab stays empty and the serial is placed from its own latest row
+                continue
             row = _latest_row(rows, serial, p.key)
             note = "" if row else NO_DATE_NOTE
             place(serial, p.key, _seed_row(row, serial, p.key, "", note, f"workbook r{row.number}" if row else "legend"))

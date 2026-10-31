@@ -261,9 +261,13 @@ function brokenDateTimeRows_() {
 /** Run once by hand after pasting the seed CSV into the Seed tab (plain text, so nothing is reinterpreted). */
 function seedLedger() {
   requireDomainUser_();
-  if (tab_('ledger').getLastRow() > 1) throw new Error('The ledger already has rows; seeding runs once.');
-  const [columns, ...table] = tab_('seed').getDataRange().getValues();
+  const [columns, ...table] = tab_('seed').getDataRange().getDisplayValues(); // as shown: Sheets can hold a pasted time as a value, even in a text column
   if (columns.join('|') !== SEED_COLUMNS.join('|')) throw new Error('The Seed columns have changed.');
+  seedFromTable_(table);
+}
+
+function seedFromTable_(table) {
+  if (tab_('ledger').getLastRow() > 1) throw new Error('The ledger already has rows; seeding runs once.');
   const rows = rowsFromSeed(table);
   appendRows_(tab_('ledger'), rows, { at: new Date(), author: 'seed' }, {});
   refreshDerived_(rows);

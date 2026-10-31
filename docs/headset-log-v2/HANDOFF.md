@@ -71,10 +71,10 @@ A copy goes stale the moment it is made, and it holds the whole workbook, so res
 
 ```sh
 cd src
-python3 -B test_device_inventory_ledger.py                               # 50 tests
-python3 -B test_tip_proposals.py                                         # 23 tests
+python3 -B test_device_inventory_ledger.py                               # 51 tests
+python3 -B test_tip_proposals.py                                         # 25 tests
 cd device-inventory-apps-script-draft
-node --test tests/rules.test.js tests/tips.test.js tests/code.test.js    # 61 pass, 9 parity tests skip without parity.json
+node --test tests/rules.test.js tests/tips.test.js tests/code.test.js    # 67 pass, 9 parity tests skip without parity.json
 ```
 
 Full parity needs a Hardware changes workbook: `HARDWARE_CHANGES_XLSX=/path/to/file.xlsx python3 -B parity_check.py`, then rerun node. It writes `tests/parity.json`, which holds real
@@ -85,7 +85,7 @@ serials: `.gitignore` excludes it, and it must never be committed. `check_schema
 Proven locally: rules, schema, tip proposals, decisions, setup progress, the domain gate's logic, and the sheet and form wiring against **fake** Google services. Python and
 Apps Script match on 28 scenarios and an archive replay, run privately. The tip logic has only seen made-up data.
 
-Not proven: anything on real Google (30 tests in `docs/pilot-plan.md`), including `Spreadsheet.copy`, whether a copy keeps the bound script and whether it clears Script Properties, `addEditor` under these scopes, `Utilities.formatDate` and `parseDate`, `Intl` in the V8 runtime, header notes,, including whether `Session.getActiveUser().getEmail()` returns the address on this domain. If it comes back empty the
+Not proven: anything on real Google (32 tests in `docs/pilot-plan.md`), including `Spreadsheet.copy`, whether a copy keeps the bound script and whether it clears Script Properties, `addEditor` under these scopes, `Utilities.formatDate` and `parseDate`, `Intl` in the V8 runtime, header notes,, including whether `Session.getActiveUser().getEmail()` returns the address on this domain. If it comes back empty the
 gate refuses everyone: safe, but it would need a different check.
 
 "Ready for deployment" here means ready to install on a copy and rehearse. It does not mean proven.
@@ -133,6 +133,7 @@ Every rule here is binding on any person or agent continuing this work. When one
 - Paste only `Rules.gs`, `Tips.gs`, `Code.gs`, `Init.gs` and `appsscript.json`. Never paste `tests/`. `AuditDateTimeColumn.gs` goes in its own project with the read-only scope in its header.
 - The form stays unpublished until the rehearsal passes. Then restrict it to the domain by hand, and publish it to the pilot people only.
 - Keep the old workbook running alongside the pilot. To stop, close the form to responses; nothing is lost.
+- Never add a function to the pasted files that holds the domain, the lab count or a time zone, for example a helper that calls `configure()` with real values. Those values live only in Script Properties, set by hand through the menu or a private note outside this repository.
 - Never weaken the domain gate to make something work. If `getActiveUser().getEmail()` comes back empty, stop and ask.
 - Sheet protection is a guard and not security: the owner can edit anything. Do not describe it as a lock.
 

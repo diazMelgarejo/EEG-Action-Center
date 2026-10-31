@@ -436,7 +436,7 @@ def rows_from_seed(table: list[list[str]]) -> Ledger:
     for date, time, combined, lab, kind, change, notes, holding, time_basis, source in table:
         row = Row(date=parse_date_text(date), time=parse_time_text(time), lab=lab, type=kind, change=int(change), notes=notes,
                   holding=holding, time_basis=time_basis, source=source, id=f"tip-{change}", group="tip")
-        if (combined or "") != date_time_text(row.date_time):
+        if " ".join((combined or "").split()) != " ".join(date_time_text(row.date_time).split()):  # a sheet may show one space
             raise ValueError(f"Date&Time {combined!r} is not Date + Time for {change}.")
         rows.append(row)
     return tuple(rows)
