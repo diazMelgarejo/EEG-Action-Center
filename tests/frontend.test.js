@@ -71,3 +71,29 @@ test('a site name has no default and its example names no real place', () => {
   assert.doesNotMatch(appText, /Example Labs|siteName: "/);
   assert.match(pageText, /placeholder="e\.g\. Site A"/);
 });
+
+test('the status page link accepts only a production Apps Script web app address, in the forms Google uses', () => {
+  const { app } = loadApp();
+  [
+    'https://script.google.com/macros/s/AKfycbxExample_id-1/exec',
+    'https://script.google.com/a/macros/example.org/s/AKfycbxExample_id-1/exec',
+    'https://script.google.com/a/example.org/macros/s/AKfycbxExample_id-1/exec',
+  ].forEach((url) => assert.equal(app.isStatusLink(url), true, url));
+  [
+    'http://script.google.com/macros/s/AKfy/exec',
+    'https://script.google.com/macros/s/AKfy/dev',
+    'https://script.google.com/macros/s/AKfy/exec?x=1',
+    'https://script.google.com/macros/s/AKfy/exec#frag',
+    'https://script.google.com.example.org/macros/s/AKfy/exec',
+    'https://user:pw' + '@script.google.com/macros/s/AKfy/exec', // split so it does not look like an address to the scanner
+    'https://script.google.com:8443/macros/s/AKfy/exec',
+    'https://docs.google.com/spreadsheets/d/x',
+    'javascript:alert(1)', '',
+  ].forEach((url) => assert.equal(app.isStatusLink(url), false, url));
+});
+
+test('the status link is its own optional field, disabled until set, and rejected if it is not a status address', () => {
+  assert.match(pageText, /id="link-status"/);
+  assert.match(pageText, /id="cfg-status"/);
+  assert.match(appText, /statusUrl/);
+});
