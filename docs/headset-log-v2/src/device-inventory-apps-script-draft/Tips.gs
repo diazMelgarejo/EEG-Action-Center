@@ -60,7 +60,10 @@ function proposeTips(rows, legend, labCount) {
   const labSerials = new Set(Object.values(legend.labs).map(serialOf_).filter((s) => s !== null));
   for (let n = 1; n <= labCount; n += 1) {
     const lab = `Lab ${n}`;
-    const row = byLab[lab] || null;
+    const arrival = byLab[lab] || null;
+    const left = arrival && bySerial[arrival.change].lab !== lab ? bySerial[arrival.change] : null; // its latest row is elsewhere
+    const row = left ? null : arrival;
+    const moved = left ? `workbook row ${left.number} moves ${left.change} from here to ${left.lab}` : '';
     const raw = legend.labs[lab];
     const text = isBlank_(raw) ? '' : String(raw);
     const leg = serialOf_(raw);
@@ -70,20 +73,20 @@ function proposeTips(rows, legend, labCount) {
     let reason;
     let options;
     if (!row && !text) {
-      [status, reason, options] = [EMPTY, 'no workbook row and the legend shows nothing', []];
+      [status, reason, options] = [EMPTY, moved || 'no workbook row and the legend shows nothing', []];
     } else if (text && leg === null) {
       [status, reason] = [DECIDE, `legend cell is not a single serial: ${text}`];
-      options = row ? [USE_WORKBOOK, HOLD] : [HOLD];
-    } else if (row && leg === wb && bySerial[row.change].lab !== lab) {
-      [status, reason, options] = [DECIDE, `workbook row ${row.number} puts ${wb} here, but a later workbook row moves it to ${bySerial[row.change].lab}`, [USE_WORKBOOK, USE_LEGEND, HOLD]];
+      options = row || left ? [USE_WORKBOOK, HOLD] : [HOLD];
     } else if (row && leg === wb) {
       [status, reason, options] = [AGREE, 'workbook and legend agree', []];
     } else {
       status = DECIDE;
-      reason = `workbook says ${row ? wb : 'nothing'}${row ? ` (row ${row.number})` : ''}; legend says ${leg !== null ? leg : 'nothing'}`;
-      options = [[USE_WORKBOOK, row !== null], [USE_LEGEND, leg !== null], [HOLD, true]].filter(([, ok]) => ok).map(([o]) => o);
+      const workbookSays = moved || `workbook says ${row ? wb : 'nothing'}${row ? ` (row ${row.number})` : ''}`;
+      reason = `${workbookSays}; legend says ${leg !== null ? leg : 'nothing'}`;
+      options = [[USE_WORKBOOK, row !== null || left !== null], [USE_LEGEND, leg !== null], [HOLD, true]].filter(([, ok]) => ok).map(([o]) => o);
     }
-    proposals.push(makeProposal_(lab, lab, wb, row ? row.number : null, leg, text, status, reason, options));
+    const shown = row || left;
+    proposals.push(makeProposal_(lab, lab, wb, shown ? shown.number : null, leg, text, status, reason, options));
   }
   Object.keys(legend.holding).map(Number).sort((a, b) => a - b).forEach((serial) => {
     const kind = legend.holding[String(serial)];
@@ -140,6 +143,7 @@ function resolveTips(proposals, decisions, rows) {
     }
     if (p.key.startsWith('Lab ')) {
       const serial = choice === USE_LEGEND ? p.legend : p.workbook;
+      if (serial === null) return; // Use workbook on a headset that left: the lab stays empty and the serial is placed from its own latest row
       const row = latestRowFor_(rows, serial, p.key);
       place(serial, p.key, seedRow_(row, serial, p.key, '', row ? '' : NO_DATE_NOTE, sourceOf(row, 'legend')));
     } else if ((p.status === DECIDE && UNPLACED_OPTIONS.indexOf(choice) !== -1) || p.place === '') {

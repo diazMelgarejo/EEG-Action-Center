@@ -386,6 +386,49 @@ test('tips are proposed from the live workbook; column C is never read and only 
   assert.equal(world.sheets.get('Progress').rows[7][1], '✅ Done');
 });
 
+// Real Sheets can turn a pasted 15:30 into a time value even in a plain text column: getValues then gives an 1899 Date, though the cell still shows 15:30.
+function sheetsTurnsTimesIntoValues(seed) {
+  const asValue = (row) => row.map((cell, i) => (i === 1 && /^\d{2}:\d{2}$/.test(cell) ? new Date(Date.UTC(1899, 11, 30, ...cell.split(':').map(Number))) : cell));
+  const shown = (row) => row.map((cell) => (cell instanceof Date ? cell.toISOString().slice(11, 16) : String(cell)));
+  seed.getDataRange = () => ({ getValues: () => seed.rows.map(asValue), getDisplayValues: () => seed.rows.map(asValue).map(shown) });
+}
+
+test('seeding from Review survives Sheets turning a seed time into a time value', () => {
+  const world = initialized();
+  world.api.loadTipProposals();
+  reviewRow(world, 'Lab 1')[8] = 'Use legend';
+  world.api.seedFromReview();
+  reviewRow(world, 'serial 7002')[8] = 'Retired';
+  sheetsTurnsTimesIntoValues(world.sheets.get('Seed'));
+  assert.equal(world.api.seedFromReview().seeded, true);
+  assert.equal(world.sheets.get('Ledger').rows.length, 6);
+});
+
+test('seeding by hand reads the Seed tab as it is shown, so a time value cannot stop it', () => {
+  const world = load();
+  world.api.setup();
+  const seed = world.sheets.get('Seed');
+  seed.rows = SEED.map((r) => r.slice());
+  sheetsTurnsTimesIntoValues(seed);
+  world.api.seedLedger();
+  assert.equal(world.sheets.get('Ledger').rows.length, 5);
+});
+
+test('the Seed tab is written in one block, because a pasted row can be reinterpreted', () => {
+  const world = initialized();
+  world.api.loadTipProposals();
+  reviewRow(world, 'Lab 1')[8] = 'Use legend';
+  world.api.seedFromReview();
+  reviewRow(world, 'serial 7002')[8] = 'Retired';
+  const seed = world.sheets.get('Seed');
+  const append = seed.appendRow;
+  let appended = 0;
+  seed.appendRow = (row) => { appended += 1; return append(row); };
+  world.api.seedFromReview();
+  assert.equal(appended, 1); // the header only
+  assert.equal(seed.rows.length, 6);
+});
+
 test('seeding is blocked until every decision is made, then asks about what the decisions left unplaced', () => {
   const world = initialized();
   world.api.loadTipProposals();

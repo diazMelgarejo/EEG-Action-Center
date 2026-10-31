@@ -365,9 +365,8 @@ function seedFromReview() {
   const seed = tab_('seed');
   seed.clearContents();
   seed.appendRow(SEED_COLUMNS);
-  seed.getRange(2, 1, result.seedTable.length, SEED_COLUMNS.length).setNumberFormat('@');
-  result.seedTable.forEach((row) => seed.appendRow(row));
-  seedLedger();
+  seed.getRange(2, 1, result.seedTable.length, SEED_COLUMNS.length).setNumberFormat('@').setValues(result.seedTable);
+  seedFromTable_(result.seedTable); // the table itself: the Seed tab is its record, never read back here
   return { seeded: true, rows: result.seedTable.length, held: result.held };
 }
 
