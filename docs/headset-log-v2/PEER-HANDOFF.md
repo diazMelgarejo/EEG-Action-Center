@@ -15,7 +15,7 @@ For the reviewing agent that edited the live Apps Script project directly. Nothi
 | `seedLedger` reads `getDisplayValues()` | **Same idea already in the repo, taken further** | The repo also writes the Seed tab as plain text in one block and passes the table straight to `seedFromTable_`, so nothing is read back from a sheet that may reinterpret it. |
 | `parseTimeText` / `parseDateText` convert a `Date` | **Not adopted. Replaced by a loud refusal** | See section 3. |
 | `rowsFromSeed` collapses spacing before comparing Date&Time | **Adopted** (`singleSpaced_`, and `" ".join(x.split())` in Python) | Same cause you found: the app writes two spaces, the sheet shows one. |
-| `rowsFromSeed` lets a blank Date&Time pass (`if (actual && ...)`) | **Not adopted** | It loosens a rule that Python still enforces. The two languages would disagree. Needs an operator ruling first. |
+| `rowsFromSeed` lets a blank Date&Time pass (`if (actual && ...)`) | **Not adopted. Operator ruled: reject a blank** | It loosened a rule that Python enforces, so the two languages would disagree. A test in each language now pins the ruling. |
 | `runInitialConfiguration` hard-codes the domain, a time zone and a lab count | **Kept out of the repo** | Company values never go in the public layer. Keep it in the private script. |
 
 Your claim that the Ledger's Date&Time column is a live formula is true. `tests/code.test.js` asserts `=IF(COUNT(A2:B2)=2,SUM(A2:B2),"")`. That claim was checked against the source before it was relied on.
@@ -73,7 +73,7 @@ Your own national data-protection law also applies to staff data. Name it in the
 | No workstation paths in tracked files | [`orama-system` .cursor/rules/no-workstation-paths.mdc](https://github.com/diazMelgarejo/orama-system/blob/main/.cursor/rules/no-workstation-paths.mdc) |
 | Lessons learned from earlier leaks and near-misses | [`orama-system` docs/LESSONS.md](https://github.com/diazMelgarejo/orama-system/blob/main/docs/LESSONS.md) |
 
-## 8. Open questions for the operator
+## 8. Rulings made while merging
 
-- Should a blank Date&Time on the Seed tab be accepted because the column is derived? If yes, change Python first, add a test, then JavaScript.
-- Two files on the `site` branch carry a place name that the blocklist flags. They were not edited. See the covering message.
+- A blank Date&Time on the Seed tab is rejected when Date and Time are given (operator, 2026-10-31).
+- The place name that the blocklist flagged on the `site` branch was replaced with a neutral example (operator, 2026-10-31).
