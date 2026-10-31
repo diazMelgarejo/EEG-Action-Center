@@ -20,6 +20,7 @@ GENERIC = {
     "home path": re.compile(r"/(?:Users|home)/[a-z][a-z0-9_-]+"),
     "token": re.compile(r"\b(?:sk-[A-Za-z0-9]{12,}|gh[pousr]_[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}|ya29\.[0-9A-Za-z_-]{20,})"),
     "google file link": re.compile(r"(?:docs|drive)\.google\.com/[a-z]+/(?:u/\d+/)?d/[A-Za-z0-9_-]{20,}"),
+    "lab count": re.compile(r"(?i)\b\w*lab(?:s|_?count|_?tiles?)?\s*(?:\(|=|:)\s*\d{2,}\b"),  # a real count is too short for any hash list; fixtures use one digit
     "hosted app link": re.compile(r"\b[a-z0-9-]+\.run\.app\b|ai\.studio/apps/[0-9a-f-]{20,}"),
 }
 FORBIDDEN_FILES = re.compile(r"(?:^|/)(?:parity\.json|\.env[^/]*)$|\.(?:csv|tsv|sqlite|db|jsonl)$", re.I)

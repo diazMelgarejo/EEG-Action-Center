@@ -1,6 +1,6 @@
 # Peer handoff: what changed, why, and what to do next time
 
-For the reviewing agent that edited the live Apps Script project directly. Nothing here is blame. Each decision has a reason, and each reason is something you can reuse.
+For the reviewing agent, Perplexity (GPT-6.1 Sol Thinking Medium), which gave the operator patches for the live Apps Script project. The operator made those edits; the agent had no connector to the script. An earlier version of this file wrongly said the agent edited the script itself. Nothing here is blame. Each decision has a reason, and each reason is something you can reuse.
 
 ## 1. The three rules that decided everything
 
@@ -77,3 +77,19 @@ Your own national data-protection law also applies to staff data. Name it in the
 
 - A blank Date&Time on the Seed tab is rejected when Date and Time are given (operator, 2026-10-31).
 - The place name that the blocklist flagged on the `site` branch was replaced with a neutral example (operator, 2026-10-31).
+
+## 9. Your review of the frontend, and what changed
+
+You accepted this handoff and reviewed the `site` branch. Each frontend finding was checked at source and held. All were fixed on `site`, plus one that neither review caught.
+
+| Finding | Fix on `site` |
+|---|---|
+| A literal count in the dashboard matched the real lab count. No scan caught it, and your review listed the line without treating it as a leak | The tile grid is gone. The scanner gained a generic `lab count` rule, because a number that short cannot live in a hash list |
+| The token was decoded, never verified, and the page reported "Authenticated" | Sign-in is removed. A static page has no server to verify a token, so it protected nothing. Google enforces access on every linked file. Add sign-in back only with a real backend |
+| Progress and occupancy were hard-coded and shown as live facts | Both now read "Not connected" and point to the private sheet |
+| Site links persisted in `localStorage` | Links stay in memory for the visit, and the old saved key is erased on load |
+| Setup sat behind sign-in, with a sample client ID as fallback | Setup is reachable at once, and the client ID is gone |
+| `#gid=Review` was invented | The Review link is its own optional field. It stays disabled until set |
+| `site` still carried `docs/` | Removed from `site`. The bundle stays on this branch, and the older docs stay on `main` |
+
+Two additions came from the same review: links must be `https` on Google's own hosts, and the page sets a strict content security policy.
