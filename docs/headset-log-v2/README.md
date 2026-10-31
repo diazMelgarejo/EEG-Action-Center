@@ -86,7 +86,7 @@ Full parity: `HARDWARE_CHANGES_XLSX=/path/to/workbook.xlsx python3 -B parity_che
 Proven locally: the rules, the schema, tip proposals and decisions, setup progress, the domain gate's logic, and the sheet and form wiring against **fake** Google
 services; Python and Apps Script give the same answers on 28 scenarios and an archive replay.
 
-Not proven: everything that depends on real Google. The pilot plan lists 30 tests (sign-in prompts, answer formats in Forms, dropdown refresh, two people
+Not proven: everything that depends on real Google. The pilot plan lists 32 tests (sign-in prompts, answer formats in Forms, dropdown refresh, two people
 at once, whether `getActiveUser().getEmail()` returns the address, sharing, the form's progress bar and theme). The tip logic has not seen a real workbook.
 
 ## Layout

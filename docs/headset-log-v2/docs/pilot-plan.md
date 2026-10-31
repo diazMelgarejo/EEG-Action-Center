@@ -33,7 +33,7 @@ Proven on a laptop with fake Google services: the rules, the schema, tip proposa
 
 | Stage | Who | Length | Done when |
 |---|---|---|---|
-| Rehearsal | Operator, on a throwaway copy | First | T01 to T30 run |
+| Rehearsal | Operator, on a throwaway copy | First | T01 to T32 run |
 | First week | Operator plus one named person | 1 week | Each entry reconciled by hand the same day |
 | Rest of the month | All pilot people | 3 weeks | Weekly review held; acceptance below passes |
 
@@ -71,6 +71,8 @@ Proven on a laptop with fake Google services: the rules, the schema, tip proposa
 | T28 | In a template, run **Add a site** | A new file exists, the named admin can edit it, the Sites tab is gone from it, and it is listed in the template |
 | T29 | Open that copy | The script is present and starts unconfigured, or record what Google actually did; set its zone by hand, then `configure()` with mode `new` and `setup()` |
 | T30 | Add a headset as that site's admin, and submit it into a lab | It appears on the form and in Current; the first site is unchanged |
+| T31 | Run **Seed from reviewed tips**, then open the Seed tab and the Ledger | No error. Sheets may turn a time or Date&Time in the Seed tab into a value or add or remove a space; the seed must still load, Ledger Date and Time must equal the Seed tab, and a Date&Time that really differs must still be refused |
+| T32 | In the WORK copy, find a headset whose latest row puts it outside the lab where an older row put it (for example Lab, then None). Load tips | That lab is not proposed with the headset; Review names the later row; the headset is asked about under its own serial; **Use workbook** leaves the lab empty |
 
 ## Weekly review
 

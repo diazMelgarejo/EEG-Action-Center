@@ -22,6 +22,22 @@ test('the latest dated row per lab is the workbook tip, and undated rows are nev
   assert.equal(got['Lab 2'].workbook, 7003);
 });
 
+test('a headset that left is no longer the lab tip, and its latest row is the one shown', () => {
+  const rows = [row(20, '2026-03-01', '09:00', 'Lab 1', 7001), row(21, '2026-05-01', '09:00', 'None', 7001)];
+  const got = keyed(R.proposeTips(rows, legend(), 1));
+  assert.deepEqual([got['Lab 1'].status, got['Lab 1'].workbook, got['Lab 1'].workbookRow], [EMPTY, null, 21]);
+  assert.ok(got['Lab 1'].reason.includes('row 21 moves 7001'));
+  assert.deepEqual([got['serial 7001'].status, got['serial 7001'].workbookRow], [DECIDE, 21]);
+});
+
+test('Use workbook on a headset that left keeps it out of the lab', () => {
+  const rows = [row(20, '2026-03-01', '09:00', 'Lab 1', 7001), row(21, '2026-05-01', '09:00', 'None', 7001)];
+  const props = R.proposeTips(rows, legend({ 'Lab 1': 7001 }), 1);
+  assert.deepEqual(props[0].options, [USE_WORKBOOK, USE_LEGEND, HOLD]);
+  const result = R.resolveTips(props, { 'Lab 1': USE_WORKBOOK, 'serial 7001': 'Spare' }, rows);
+  assert.deepEqual(result.seedTable.map((r) => [r[0], r[3], r[7], r[9]]), [['May 01, 2026', 'None', 'Spare', 'workbook r21']]);
+});
+
 test('a disagreement needs a decision and offers both sources', () => {
   const got = keyed(R.proposeTips(ROWS, legend({ 'Lab 1': 7001 }), 1))['Lab 1'];
   assert.deepEqual([got.status, got.options], [DECIDE, [USE_WORKBOOK, USE_LEGEND, HOLD]]);
