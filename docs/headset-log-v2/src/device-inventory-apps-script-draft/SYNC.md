@@ -49,6 +49,7 @@ in several orders to catch it.
 | `correction_rows` | `correctionRows` | |
 | `form_choices(ledger, lab_count)`, `propose_tips(rows, legend, lab_count)` | Same, with `labCount` | The lab count is always passed in; it is never a constant |
 | `rows_from_seed` | `rowsFromSeed` | Python takes `now` for tests. Date&Time is compared with spacing collapsed, because a sheet may show one space |
+| `parse_date_text`, `parse_time_text` | `parseDateText`, `parseTimeText` | A Sheets date or time value (a `datetime.date`/`time` here, a `Date` there) is refused with a message naming the cause. Never read through a time zone: the script and the sheet zones differ, and 1899 values carry odd offsets |
 | `WorkbookRow`, `Legend`, `Proposal`, `TipResult` | plain objects, same fields in camelCase | `workbook_row` is `workbookRow`, `legend_text` is `legendText`, `seed_table` is `seedTable` |
 | `propose_tips`, `resolve_tips` | `proposeTips`, `resolveTips` | Decisions are `{key: choice}`; a decision must be one of the offered options |
 | `setup_progress`, `progress_fraction`, `SETUP_STEPS` | `setupProgress`, `progressFraction`, `SETUP_STEPS` | The step names are compared by `check_schema.py` |

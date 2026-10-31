@@ -242,3 +242,8 @@ test('replaying the archive matches the Python reference', { skip: !parity }, ()
   const places = Object.fromEntries(Object.keys(parity.archive.places).map((s) => [s, R.currentPlace(ledger, Number(s))]));
   assert.deepEqual({ ...places }, parity.archive.places);
 });
+
+test('a cell Sheets turned into a date or time value is refused with its cause, never read through a time zone', () => {
+  assert.throws(() => R.parseTimeText(new Date(1899, 11, 30, 15, 30)), /time value/);
+  assert.throws(() => R.parseDateText(new Date(2026, 9, 22)), /date value/);
+});
