@@ -162,7 +162,8 @@ corrected = dil.correction_rows(LEDGER + pulled, auto.id, AT - timedelta(hours=2
 SEED = [["January 15, 2021", "12:15", "2021/01/15  12:15:00", "Lab 12", "Headset", "7001", "", "", "stated", "workbook r101"],
         ["", "", "", "Lab 8", "Headset", "7003", "", "", "unknown", "legend"],
         ["January 18, 2021", "10:02", "2021/01/18  10:02:00", "None", "Headset", "7007", "", "For repair", "stated", "workbook r101"],
-        ["January 19, 2021", "", "", "Lab 2", "Headset", "7008", "", "", "stated", "workbook r101"]]
+        ["January 19, 2021", "", "", "Lab 2", "Headset", "7008", "", "", "stated", "workbook r101"],
+        ["January 20, 2021", "23:30", "2021/01/20 23:30:00", "Lab 3", "Headset", "7009", "", "", "stated", "workbook r101"]]
 TIMES = [("", ""), ("2026-11-03", "14:22"), ("2026-11-03", ""), ("", "14:22"), ("2026-11-03", "7:05")]
 labs, serials = dil.form_choices(LEDGER, 6)
 

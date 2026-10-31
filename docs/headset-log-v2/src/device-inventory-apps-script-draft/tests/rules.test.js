@@ -159,6 +159,11 @@ test('a correction adds rows, supersedes the old ones, and keeps the one-minute 
   assert.equal(R.effectiveRows(after).some((r) => r.id === auto.id), false);
 });
 
+test('the seed ignores the spacing a sheet gives Date&Time', () => {
+  const [row] = R.rowsFromSeed([['January 15, 2021', '12:15', '2021/01/15 12:15:00', 'Lab 12', 'Headset', '7001', '', '', 'stated', 'x']]);
+  assert.equal(R.dateTimeText(R.dateTime(row)), '2021/01/15  12:15:00');
+});
+
 test('the seed refuses a Date&Time that is not Date + Time', () => {
   assert.throws(() => R.rowsFromSeed([['January 15, 2021', '12:15', '2021/01/15  12:16:00', 'Lab 12', 'Headset', '7001', '', '', 'stated', 'x']]));
 });
