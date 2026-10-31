@@ -158,6 +158,7 @@ function rowText(row) {
 }
 
 function parseDateText(text) {
+  if (text instanceof Date) throw new Error('Date arrived as a date value, not text; read the displayed text of the cell.');
   const value = String(text || '').trim();
   if (!value) return null;
   const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -168,6 +169,7 @@ function parseDateText(text) {
 }
 
 function parseTimeText(text) {
+  if (text instanceof Date) throw new Error('Time arrived as a time value, not text; read the displayed text of the cell.');
   const value = String(text || '').trim();
   if (!value) return '';
   const match = value.match(/^(\d{1,2}):(\d{2})$/);
