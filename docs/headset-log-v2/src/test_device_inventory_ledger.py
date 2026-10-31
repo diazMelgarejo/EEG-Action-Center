@@ -97,6 +97,18 @@ class TimeRules(unittest.TestCase):
         self.assertEqual(rows[0].time_basis, "defaulted")
 
 
+class SheetsValuesAreNotText(unittest.TestCase):
+    """A cell Sheets turned into a date or time value must be refused with a message that names the cause."""
+
+    def test_a_time_value_is_refused_not_guessed(self):
+        with self.assertRaisesRegex(ValueError, "time value"):
+            dil.parse_time_text(time(15, 30))
+
+    def test_a_date_value_is_refused_not_guessed(self):
+        with self.assertRaisesRegex(ValueError, "date value"):
+            dil.parse_date_text(date(2026, 10, 22))
+
+
 class MismatchedRemoval(unittest.TestCase):
     def setUp(self):
         self.led = ledger((T0, 1111, "Lab 5"))  # lab shows 1111; 2222 is pulled out of Lab 5

@@ -3,7 +3,7 @@
 Created 2026-10-31. **Nothing here is deployed**, and nothing here has run against real Google services. Ready to install on a copy and rehearse; not proven.
 Real inventory data is not in this bundle. It is read from your own sheets, inside Google, after you sign in with an organization account.
 
-Future agents: start with [`HANDOFF.md`](HANDOFF.md).
+Future agents: start with [`HANDOFF.md`](HANDOFF.md). An agent that edited the live script directly should read [`PEER-HANDOFF.md`](PEER-HANDOFF.md): what was merged, what was refused and why, and the sources behind the privacy rules.
 
 This replaces an earlier generated draft. [`REVIEW.md`](REVIEW.md) lists what was wrong with the draft and what changed. Rules and motivation:
 [`docs/DESIGN.md`](docs/DESIGN.md).
@@ -91,5 +91,5 @@ at once, whether `getActiveUser().getEmail()` returns the address, sharing, the 
 
 ## Layout
 
-`README.md`, `HANDOFF.md`, `REVIEW.md`, `docs/` (design, pilot plan, decision matrix, diagram), `src/` (Python, Apps Script, theme).
+`README.md`, `HANDOFF.md`, `PEER-HANDOFF.md`, `REVIEW.md`, `docs/` (design, pilot plan, decision matrix, diagram), `src/` (Python, Apps Script, theme).
 Apps Script files to paste: `Rules.gs`, `Tips.gs`, `Code.gs`, `Init.gs`, `appsscript.json`. `AuditDateTimeColumn.gs` is separate: its own project, read-only.

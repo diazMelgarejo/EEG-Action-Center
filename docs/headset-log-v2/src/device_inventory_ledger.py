@@ -161,6 +161,8 @@ def row_text(row: Row) -> list[object]:
 
 
 def parse_date_text(text: str | None) -> dt.date | None:
+    if isinstance(text, (dt.date, dt.time)):  # datetime is a date; Sheets turned the cell into a value
+        raise ValueError("Date arrived as a date value, not text; read the displayed text of the cell.")
     text = str(text or "").strip()
     if not text:
         return None
@@ -173,6 +175,8 @@ def parse_date_text(text: str | None) -> dt.date | None:
 
 
 def parse_time_text(text: str | None) -> dt.time | None:
+    if isinstance(text, (dt.date, dt.time)):
+        raise ValueError("Time arrived as a time value, not text; read the displayed text of the cell.")
     text = str(text or "").strip()
     if not text:
         return None
