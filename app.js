@@ -1,6 +1,6 @@
 // Client-side state & Google Identity integration
 const DEFAULT_CONFIG = {
-  siteName: "Philippines Labs (PH)",
+  siteName: "Example Labs",
   sheetUrl: "",
   formUrl: "",
   driveUrl: "",
