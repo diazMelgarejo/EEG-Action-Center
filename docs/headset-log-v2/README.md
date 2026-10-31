@@ -93,3 +93,4 @@ at once, whether `getActiveUser().getEmail()` returns the address, sharing, the 
 
 `README.md`, `HANDOFF.md`, `PEER-HANDOFF.md`, `REVIEW.md`, `docs/` (design, pilot plan, decision matrix, diagram), `src/` (Python, Apps Script, theme).
 Apps Script files to paste: `Rules.gs`, `Tips.gs`, `Code.gs`, `Init.gs`, `appsscript.json`. `AuditDateTimeColumn.gs` is separate: its own project, read-only.
+`src/device-inventory-status-app/` is also its own project, read-only: a status page for signed-in staff, switched off until an administrator enables it (`INSTALL.md` there, design in `docs/WEBAPP-DESIGN.md`).
