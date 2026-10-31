@@ -235,6 +235,11 @@ class Seed(unittest.TestCase):
         table = [["January 15, 2021", "12:15", "2021/01/15 12:15:00", "Lab 12", "Headset", "7001", "", "", "stated", "x"]]
         self.assertEqual(dil.rows_from_seed(table)[0].date_time, datetime(2021, 1, 15, 12, 15))
 
+    def test_seed_refuses_a_blank_date_time_when_date_and_time_are_given(self):  # operator ruling 2026-10-31
+        table = [["January 15, 2021", "12:15", "", "Lab 12", "Headset", "7001", "", "", "stated", "x"]]
+        with self.assertRaises(ValueError):
+            dil.rows_from_seed(table)
+
     def test_seed_refuses_a_date_time_that_is_not_date_plus_time(self):
         table = [["January 15, 2021", "12:15", "2021/01/15  12:16:00", "Lab 12", "Headset", "7001", "", "", "stated", "x"]]
         with self.assertRaises(ValueError):

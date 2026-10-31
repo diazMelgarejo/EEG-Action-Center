@@ -164,6 +164,10 @@ test('the seed ignores the spacing a sheet gives Date&Time', () => {
   assert.equal(R.dateTimeText(R.dateTime(row)), '2021/01/15  12:15:00');
 });
 
+test('the seed refuses a blank Date&Time when Date and Time are given (operator ruling)', () => {
+  assert.throws(() => R.rowsFromSeed([['January 15, 2021', '12:15', '', 'Lab 12', 'Headset', '7001', '', '', 'stated', 'x']]));
+});
+
 test('the seed refuses a Date&Time that is not Date + Time', () => {
   assert.throws(() => R.rowsFromSeed([['January 15, 2021', '12:15', '2021/01/15  12:16:00', 'Lab 12', 'Headset', '7001', '', '', 'stated', 'x']]));
 });
