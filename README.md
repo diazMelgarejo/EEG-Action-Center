@@ -11,9 +11,9 @@ This site is not an access boundary. It has no server, so it cannot verify anyon
 
 ## Features
 
-- **Site Links for the Visit:** Paste your private Sheet, Form, Review tab and Drive links at runtime. They stay in memory for that tab and are never saved or committed. An old copy saved by an earlier version is erased on load.
+- **Site Links for the Visit:** Paste your private status page, Sheet, Form, Review tab and Drive links at runtime. The status page is a separate private Google web app: this page only links to it and fetches nothing. They stay in memory for that tab and are never saved or committed. An old copy saved by an earlier version is erased on load.
 - **Honest State:** Setup progress and lab occupancy read "Not connected". This page has no live data, so it never shows a status it cannot know.
-- **Google Links Only:** A link must be `https` on `docs.google.com`, `drive.google.com` or `forms.gle`.
+- **Google Links Only:** A link must be `https` on `docs.google.com`, `drive.google.com` or `forms.gle`. The status page link must be a production `script.google.com` web app `/exec` address, with no query or fragment.
 - **Strict Content Security Policy:** The page loads only its own script and stylesheet.
 - **Pearl and Ivory Theme:** High-contrast, clean visual design matching the hardware changes operations system.
 

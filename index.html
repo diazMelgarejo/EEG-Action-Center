@@ -32,6 +32,15 @@
       </div>
 
       <div class="actions-grid">
+        <a id="link-status" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
+          <div class="action-icon">📋</div>
+          <div class="action-details">
+            <h3>Equipment Status</h3>
+            <p>Open the private status page: labs, serials, flags and the Add an update button. Google checks who you are.</p>
+          </div>
+          <span class="action-arrow">→</span>
+        </a>
+
         <a id="link-form" target="_blank" rel="noopener noreferrer" class="action-card card disabled">
           <div class="action-icon">📝</div>
           <div class="action-details">
@@ -113,6 +122,10 @@
         <div class="form-group">
           <label for="cfg-sheet">Master Google Sheet Link</label>
           <input type="url" id="cfg-sheet" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+        <div class="form-group">
+          <label for="cfg-status">Status Page Link (Optional)</label>
+          <input type="url" id="cfg-status" placeholder="The web app /exec address from Google">
         </div>
         <div class="form-group">
           <label for="cfg-form">Google Form Link</label>
