@@ -59,6 +59,15 @@ class Check(unittest.TestCase):
             self.add("leak.md", text)
             self.assertEqual(self.check().returncode, 1, text)
 
+    def test_a_literal_lab_count_is_refused_with_no_blocklist_entry(self):  # a short number no hash list can hold
+        for text in ("renderLab" + "Tiles(40);", "const lab" + "Count = 40;", "lab_" + "count: 40"):
+            self.add("leak.js", text)
+            self.assertEqual(self.check().returncode, 1, text)
+
+    def test_a_lab_name_or_a_single_digit_count_is_not_a_finding(self):
+        self.add("fine.js", "Lab 12 and lab" + "Count = 5 and Lab 40, label: 12, available = 30")
+        self.assertEqual(self.check().returncode, 0)
+
     def test_private_file_types_are_refused(self):
         for name in ("seed.csv", "parity.json", "log.jsonl"):
             self.add(name, "x")

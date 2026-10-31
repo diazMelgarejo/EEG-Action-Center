@@ -625,8 +625,8 @@ test('each file has its own admins; only an admin changes settings', () => {
   world.api.addAdmin('B.Person@example.org');
   world.world.email = 'b.person@example.org';
   world.api.setOtherTimeZone('Europe/Paris');
-  world.api.setLabCount(14);
-  assert.equal(world.props.get('labCount'), '14');
+  world.api.setLabCount(9);
+  assert.equal(world.props.get('labCount'), '9');
   world.api.removeAdmin('a.person@example.org');
   assert.throws(() => world.api.removeAdmin('b.person@example.org'), /At least one admin/);
 });
