@@ -1,144 +1,89 @@
-// Client-side state & Google Identity integration
-const DEFAULT_CONFIG = {
-  siteName: "Example Labs",
-  sheetUrl: "",
-  formUrl: "",
-  driveUrl: "",
-  clientId: ""
-};
+// The public dashboard. It holds no company data and no access control: Google enforces access on every linked file.
+// Links stay in memory for this visit only, so nothing private is left in the browser or in this repository.
+const LEGACY_CONFIG_KEY = "eeg_action_center_config"; // an earlier version saved links here; erased on load
+const GOOGLE_HOSTS = ["docs.google.com", "drive.google.com", "forms.gle"];
+const LINK_FIELDS = [
+  { link: "link-form", input: "cfg-form", key: "formUrl" },
+  { link: "link-sheet", input: "cfg-sheet", key: "sheetUrl" },
+  { link: "link-review", input: "cfg-review", key: "reviewUrl" },
+  { link: "link-drive", input: "cfg-drive", key: "driveUrl" }
+];
 
-let userProfile = null;
+let siteConfig = {};
 
-function loadConfig() {
-  const saved = localStorage.getItem("eeg_action_center_config");
-  return saved ? { ...DEFAULT_CONFIG, ...JSON.parse(saved) } : DEFAULT_CONFIG;
+function eraseSavedConfig() {
+  try {
+    localStorage.removeItem(LEGACY_CONFIG_KEY);
+  } catch (error) {
+    console.warn("Browser storage is blocked, so there is nothing to erase.", error);
+  }
 }
 
-function saveConfig(cfg) {
-  localStorage.setItem("eeg_action_center_config", JSON.stringify(cfg));
+function isGoogleLink(text) {
+  try {
+    const url = new URL(text);
+    return url.protocol === "https:" && GOOGLE_HOSTS.includes(url.hostname);
+  } catch (error) {
+    return false;
+  }
+}
+
+function updateLink({ link, key }) {
+  const element = document.getElementById(link);
+  const url = siteConfig[key];
+  element.classList.toggle("disabled", !url);
+  if (url) {
+    element.href = url;
+  } else {
+    element.removeAttribute("href");
+  }
 }
 
 function updateUI() {
-  const cfg = loadConfig();
-  document.getElementById("site-name").textContent = cfg.siteName || "Operational EEG Lab";
-
-  const linkSheet = document.getElementById("link-sheet");
-  const linkForm = document.getElementById("link-form");
-  const linkReview = document.getElementById("link-review");
-  const linkDrive = document.getElementById("link-drive");
-
-  if (cfg.sheetUrl) {
-    linkSheet.href = cfg.sheetUrl;
-    linkSheet.classList.remove("disabled");
-    linkReview.href = cfg.sheetUrl.includes("#gid=") ? cfg.sheetUrl : `${cfg.sheetUrl}#gid=Review`;
-    linkReview.classList.remove("disabled");
-  } else {
-    linkSheet.classList.add("disabled");
-    linkReview.classList.add("disabled");
-  }
-
-  if (cfg.formUrl) {
-    linkForm.href = cfg.formUrl;
-    linkForm.classList.remove("disabled");
-  } else {
-    linkForm.classList.add("disabled");
-  }
-
-  if (cfg.driveUrl) {
-    linkDrive.href = cfg.driveUrl;
-    linkDrive.classList.remove("disabled");
-  } else {
-    linkDrive.classList.add("disabled");
-  }
-
-  renderLabTiles(25);
+  document.getElementById("site-name").textContent = siteConfig.siteName || "No site set";
+  LINK_FIELDS.forEach(updateLink);
 }
 
-function renderLabTiles(count) {
-  const grid = document.getElementById("labs-grid");
-  grid.innerHTML = "";
-  for (let i = 1; i <= count; i++) {
-    const tile = document.createElement("div");
-    tile.className = "lab-tile";
-    tile.innerHTML = `<div class="lab-name">Lab ${i}</div><div class="lab-serial">empty</div>`;
-    grid.appendChild(tile);
-  }
+function fillForm() {
+  document.getElementById("cfg-site").value = siteConfig.siteName || "";
+  LINK_FIELDS.forEach(({ input, key }) => {
+    document.getElementById(input).value = siteConfig[key] || "";
+  });
+  document.getElementById("cfg-error").textContent = "";
 }
 
-function handleCredentialResponse(response) {
-  try {
-    const payload = JSON.parse(atob(response.credential.split('.')[1]));
-    userProfile = { email: payload.email, name: payload.name };
-    onUserSignedIn(userProfile);
-  } catch (e) {
-    console.error("Failed to parse token payload", e);
-  }
+function readForm() {
+  const links = Object.fromEntries(LINK_FIELDS.map(({ input, key }) => [key, document.getElementById(input).value.trim()]));
+  return { siteName: document.getElementById("cfg-site").value.trim(), ...links };
 }
 
-function onUserSignedIn(user) {
-  document.getElementById("auth-gate").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-  document.getElementById("google-signin-btn").classList.add("hidden");
-
-  const profBox = document.getElementById("user-profile");
-  profBox.classList.remove("hidden");
-  document.getElementById("user-email").textContent = user.email;
-  document.getElementById("site-domain").textContent = `Authenticated: ${user.email}`;
-}
-
-function initAuth() {
-  const cfg = loadConfig();
-  const clientId = cfg.clientId || "sample-client-id.apps.googleusercontent.com";
-
-  if (window.google && google.accounts && google.accounts.id) {
-    google.accounts.id.initialize({
-      client_id: clientId,
-      callback: handleCredentialResponse
-    });
-    google.accounts.id.renderButton(
-      document.getElementById("gate-signin-btn"),
-      { theme: "outline", size: "large" }
-    );
-  }
+function badLinks(config) {
+  return LINK_FIELDS.filter(({ key }) => config[key] && !isGoogleLink(config[key]));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  eraseSavedConfig();
   updateUI();
 
-  document.getElementById("config-btn").addEventListener("click", () => {
-    const cfg = loadConfig();
-    document.getElementById("cfg-site").value = cfg.siteName || "";
-    document.getElementById("cfg-sheet").value = cfg.sheetUrl || "";
-    document.getElementById("cfg-form").value = cfg.formUrl || "";
-    document.getElementById("cfg-drive").value = cfg.driveUrl || "";
-    document.getElementById("cfg-client-id").value = cfg.clientId || "";
-    document.getElementById("config-modal").classList.remove("hidden");
-  });
+  const modal = document.getElementById("config-modal");
+  const closeModal = () => modal.classList.add("hidden");
 
-  const closeModal = () => document.getElementById("config-modal").classList.add("hidden");
+  document.getElementById("config-btn").addEventListener("click", () => {
+    fillForm();
+    modal.classList.remove("hidden");
+  });
   document.getElementById("modal-close").addEventListener("click", closeModal);
   document.getElementById("cfg-cancel").addEventListener("click", closeModal);
 
-  document.getElementById("config-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    saveConfig({
-      siteName: document.getElementById("cfg-site").value.trim(),
-      sheetUrl: document.getElementById("cfg-sheet").value.trim(),
-      formUrl: document.getElementById("cfg-form").value.trim(),
-      driveUrl: document.getElementById("cfg-drive").value.trim(),
-      clientId: document.getElementById("cfg-client-id").value.trim()
-    });
+  document.getElementById("config-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    const config = readForm();
+    if (badLinks(config).length) {
+      document.getElementById("cfg-error").textContent = "Use https links on docs.google.com, drive.google.com or forms.gle.";
+      return;
+    }
+    siteConfig = config;
     closeModal();
     updateUI();
   });
-
-  document.getElementById("signout-btn").addEventListener("click", () => {
-    userProfile = null;
-    document.getElementById("auth-gate").classList.remove("hidden");
-    document.getElementById("dashboard").classList.add("hidden");
-    document.getElementById("user-profile").classList.add("hidden");
-    document.getElementById("google-signin-btn").classList.remove("hidden");
-  });
-
-  window.addEventListener("load", initAuth);
 });
